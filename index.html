@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMV Chaser Chris | Official Website</title>
+<meta name="description" content="Official website of TMV Chaser Chris — storm chaser, creator, author, YouTube videos, live streams, and live radar hub.">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+<style>
+* {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: white;
+  background: #020202;
+  overflow-x: hidden;
+}
+
+.storm-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -5;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(90,90,90,0.25), transparent 30%),
+    radial-gradient(circle at 80% 70%, rgba(255,0,0,0.12), transparent 35%),
+    radial-gradient(circle at 50% 50%, #111 0%, #000 75%);
+  animation: moveStorm 60s linear infinite;
+}
+
+.storm-layer2 {
+  position: fixed;
+  inset: 0;
+  z-index: -6;
+  background:
+    radial-gradient(circle at 70% 30%, rgba(255,153,0,0.10), transparent 35%),
+    radial-gradient(circle at 40% 80%, rgba(40,40,40,0.8), transparent 45%);
+  animation: moveStormReverse 85s linear infinite;
+}
+
+.fog {
+  position: fixed;
+  inset: 0;
+  z-index: -4;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.045), transparent);
+  animation: fogMove 25s linear infinite;
+}
+
+/* STATIC LIGHTNING BOLTS */
+.lightning-bolts {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+  opacity: 0.22;
+  background:
+    linear-gradient(120deg, transparent 0 15%, rgba(255,255,255,0.75) 15% 15.5%, transparent 15.5% 100%),
+    linear-gradient(60deg, transparent 0 35%, rgba(255,153,0,0.45) 35% 35.5%, transparent 35.5% 100%);
+}
+
+.bolt {
+  position: fixed;
+  width: 90px;
+  height: 240px;
+  z-index: -2;
+  opacity: 0.35;
+  filter: drop-shadow(0 0 14px rgba(255,255,255,0.7));
+  pointer-events: none;
+}
+
+.bolt.one {
+  top: 120px;
+  left: 8%;
+}
+
+.bolt.two {
+  top: 230px;
+  right: 10%;
+  transform: scale(0.8) rotate(12deg);
+}
+
+.bolt.three {
+  bottom: 120px;
+  left: 45%;
+  transform: scale(0.65) rotate(-10deg);
+  opacity: 0.2;
+}
+
+.bolt svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes moveStorm {
+  from { transform: translate(0,0) scale(1.1); }
+  to { transform: translate(-220px,-120px) scale(1.2); }
+}
+
+@keyframes moveStormReverse {
+  from { transform: translate(0,0) scale(1.15); }
+  to { transform: translate(220px,120px) scale(1.25); }
+}
+
+@keyframes fogMove {
+  from { transform: translateX(0); }
+  to { transform: translateX(-260px); }
+}
+
+header {
+  background: rgba(0,0,0,0.88);
+  backdrop-filter: blur(12px);
+  padding: 18px 20px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  border-bottom: 1px solid rgba(255,153,0,0.45);
+}
+
+header h2 {
+  margin: 0 0 12px;
+  color: #ff9900;
+  letter-spacing: 2px;
+  text-shadow: 0 0 15px rgba(255,153,0,0.8);
+}
+
+nav a {
+  color: white;
+  margin: 0 10px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+nav a:hover {
+  color: #ff9900;
+}
+
+.hero {
+  min-height: 88vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 50px 20px;
+}
+
+.hero-box {
+  max-width: 950px;
+  padding: 36px;
+  border-radius: 24px;
+  background: rgba(0,0,0,0.52);
+  border: 1px solid rgba(255,153,0,0.35);
+  box-shadow: 0 0 45px rgba(255,0,0,0.18);
+}
+
+.tag {
+  display: inline-block;
+  padding: 10px 18px;
+  border: 1px solid #ff9900;
+  border-radius: 999px;
+  color: #ff9900;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.hero h1 {
+  font-size: clamp(42px, 8vw, 82px);
+  margin: 0;
+  text-transform: uppercase;
+  text-shadow: 0 0 25px rgba(255,0,0,0.9);
+}
+
+.hero p {
+  color: #ddd;
+  font-size: 20px;
+}
+
+.btn {
+  display: inline-block;
+  margin: 8px;
+  padding: 13px 22px;
+  background: linear-gradient(135deg,#ff9900,#ff3300);
+  color: black;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(255,153,0,0.35);
+}
+
+.btn:hover {
+  transform: scale(1.04);
+}
+
+.btn-dark {
+  background: rgba(255,255,255,0.08);
+  color: white;
+  border: 1px solid rgba(255,153,0,0.45);
+}
+
+section {
+  padding: 65px 20px;
+  max-width: 1150px;
+  margin: auto;
+}
+
+h2 {
+  color: #ff9900;
+  font-size: 34px;
+  text-shadow: 0 0 18px rgba(255,153,0,0.35);
+}
+
+.notice {
+  color: #d4d4d4;
+  line-height: 1.7;
+  font-size: 17px;
+}
+
+.glass {
+  background: rgba(0,0,0,0.62);
+  border: 1px solid rgba(255,153,0,0.3);
+  padding: 24px;
+  border-radius: 18px;
+  box-shadow: 0 0 25px rgba(255,0,0,0.12);
+}
+
+.grid {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card, .radar-box {
+  background: rgba(0,0,0,0.68);
+  border: 1px solid rgba(255,153,0,0.35);
+  padding: 22px;
+  border-radius: 16px;
+  box-shadow: 0 0 25px rgba(255,0,0,0.16);
+}
+
+.card {
+  width: 295px;
+  text-align: center;
+  transition: 0.25s;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 0 35px rgba(255,153,0,0.35);
+}
+
+.book-card {
+  min-height: 230px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.book-card h3 {
+  font-size: 25px;
+  color: white;
+  margin-bottom: 10px;
+}
+
+.book-label {
+  color: #ff9900;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.stat {
+  font-size: 30px;
+  color: #ff9900;
+  font-weight: bold;
+}
+
+#map {
+  width: 100%;
+  height: 540px;
+  border-radius: 14px;
+  border: 2px solid rgba(255,0,0,0.7);
+}
+
+.radar-controls {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.alert-banner {
+  display: none;
+  background: red;
+  color: white;
+  padding: 18px;
+  border-radius: 12px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-align: center;
+  animation: pulseAlert 1s infinite alternate;
+}
+
+@keyframes pulseAlert {
+  from { box-shadow: 0 0 10px red; }
+  to { box-shadow: 0 0 38px red; }
+}
+
+#alertsList {
+  margin-top: 15px;
+}
+
+.alert-item {
+  background: rgba(255,0,0,0.25);
+  border: 1px solid red;
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.outlook-note {
+  color: #aaa;
+  font-size: 14px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.video-frame {
+  width: 100%;
+  height: 420px;
+  border: 0;
+  border-radius: 15px;
+  background: #000;
+}
+
+footer {
+  text-align: center;
+  padding: 25px;
+  background: black;
+  color: #aaa;
+  border-top: 1px solid rgba(255,153,0,0.3);
+}
+
+@media (max-width: 700px) {
+  header {
+    padding: 14px 10px;
+  }
+
+  nav a {
+    display: inline-block;
+    margin: 6px;
+  }
+
+  .hero {
+    min-height: 78vh;
+  }
+
+  .hero-box {
+    padding: 25px 18px;
+  }
+
+  .card {
+    width: 100%;
+  }
+
+  #map {
+    height: 430px;
+  }
+
+  .video-frame {
+    height: 260px;
+  }
+
+  .bolt {
+    opacity: 0.18;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="storm-layer"></div>
+<div class="storm-layer2"></div>
+<div class="fog"></div>
+<div class="lightning-bolts"></div>
+
+<div class="bolt one">
+  <svg viewBox="0 0 100 250">
+    <polygon points="55,0 20,105 48,105 30,250 85,85 55,85" fill="rgba(255,255,255,0.9)"/>
+  </svg>
+</div>
+
+<div class="bolt two">
+  <svg viewBox="0 0 100 250">
+    <polygon points="55,0 20,105 48,105 30,250 85,85 55,85" fill="rgba(255,153,0,0.85)"/>
+  </svg>
+</div>
+
+<div class="bolt three">
+  <svg viewBox="0 0 100 250">
+    <polygon points="55,0 20,105 48,105 30,250 85,85 55,85" fill="rgba(255,255,255,0.8)"/>
+  </svg>
+</div>
+
+<header>
+  <h2>TMV CHASER CHRIS</h2>
+  <nav>
+    <a href="#about">About</a>
+    <a href="#radar">Live Radar</a>
+    <a href="#books">Books</a>
+    <a href="#youtube">YouTube</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-box">
+    <div class="tag">Official Website</div>
+    <h1>Storm Chaser. Creator. Author.</h1>
+    <p>Real storms. Real stories. Real grind.</p>
+    <p style="color:#aaa;">Nebraska Based • Severe Weather • Books • Content</p>
+    <a class="btn" href="#radar">View Live Radar</a>
+    <a class="btn btn-dark" href="#youtube">Watch Latest Videos</a>
+  </div>
+</div>
+
+<section id="about">
+  <div class="glass">
+    <h2>About Me</h2>
+
+    <p class="notice">
+      I’m <strong>TMV Chaser Chris</strong>, a storm chaser, content creator, and author based in Nebraska.
+      My passion is documenting real storms, real moments, and real-life stories as they happen.
+    </p>
+
+    <p class="notice">
+      Storm chasing is more than just watching weather. It takes patience, radar tracking, planning,
+      and respect for how dangerous severe weather can be. I built this site as a home base for my
+      journey — a place where people can follow my content, check live radar, and support my books.
+    </p>
+
+    <p class="notice">
+      Along with storm chasing, I create gaming videos, music, streams, and creative projects. My goal is
+      to keep growing, keep learning, and keep building something real from the ground up.
+    </p>
+
+    <p class="notice">
+      I’m also the author of <strong>My Life But Different</strong>, a book about life, pressure, growth,
+      and becoming stronger through everything life throws at you.
+    </p>
+
+    <p class="notice">
+      <strong>Mission:</strong> document real storms, create real content, and turn pressure into progress.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>What I Do</h2>
+
+  <div class="grid">
+    <div class="card">
+      <h3>🌪️ Storm Chasing</h3>
+      <p class="notice">Tracking severe weather, watching radar, and documenting storms as safely as possible.</p>
+    </div>
+
+    <div class="card">
+      <h3>🎥 Content Creation</h3>
+      <p class="notice">Creating storm videos, gaming content, music, streams, and updates for my community.</p>
+    </div>
+
+    <div class="card">
+      <h3>📖 Writing Books</h3>
+      <p class="notice">Sharing stories about life, pressure, growth, and personal experience.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Creator Stats</h2>
+
+  <div class="grid">
+    <div class="card">
+      <div class="stat">NE</div>
+      <h3>Based In</h3>
+      <p class="notice">Nebraska, USA</p>
+    </div>
+
+    <div class="card">
+      <div class="stat">2</div>
+      <h3>Books</h3>
+      <p class="notice">Available through Amazon links.</p>
+    </div>
+
+    <div class="card">
+      <div class="stat">24/7</div>
+      <h3>Radar Hub</h3>
+      <p class="notice">Live radar map with tornado watch/warning checking.</p>
+    </div>
+  </div>
+</section>
+
+<section id="radar">
+  <h2>Live Radar + Tornado Alerts + SPC Outlook</h2>
+
+  <div class="alert-banner" id="alertBanner">
+    🚨 TORNADO ALERT ACTIVE IN THE U.S. — CHECK YOUR LOCAL NWS / WEATHER RADIO NOW 🚨
+  </div>
+
+  <div class="radar-box">
+    <p class="notice">
+      This radar map includes play/pause controls, tornado watch/warning checking, and an SPC Day 1 severe weather outlook overlay.
+      Always rely on official NWS alerts, local emergency management, and weather radio for life-safety decisions.
+    </p>
+
+    <div class="radar-controls">
+      <button class="btn" onclick="enableAlerts()">🔊 Enable Alert Sound</button>
+      <button class="btn" onclick="playRadar()">▶ Play Radar</button>
+      <button class="btn" onclick="pauseRadar()">⏸ Pause Radar</button>
+      <button class="btn btn-dark" onclick="goToNebraska()">📍 Nebraska View</button>
+      <button class="btn btn-dark" onclick="goToUS()">🇺🇸 U.S. View</button>
+      <button class="btn btn-dark" onclick="toggleOutlook()">🌩️ SPC Outlook</button>
+    </div>
+
+    <div id="map"></div>
+    <div class="outlook-note" id="outlookStatus">SPC Outlook: Off</div>
+    <div id="alertsList"></div>
+  </div>
+</section>
+
+<section id="books">
+  <h2>My Books</h2>
+  <p class="notice">
+    Buy securely through Amazon. Amazon handles checkout, delivery, and tracking.
+  </p>
+
+  <div class="grid">
+    <div class="card book-card">
+      <div class="book-label">BOOK 1</div>
+      <h3>My Life But Different</h3>
+      <p class="notice">A real story about life, pressure, and growth.</p>
+      <a class="btn" href="https://www.amazon.com/Life-But-Different-Chris-Nelson/dp/B0GPQRJN65?ref_=ast_author_dp" target="_blank">Buy Now</a>
+    </div>
+
+    <div class="card book-card">
+      <div class="book-label">BOOK 2</div>
+      <h3>Elana's Journey</h3>
+      <p class="notice">A story of mystery, emotion, and the journey forward.</p>
+      <a class="btn" href="https://www.amazon.com/Elanas-Journey-Chris-Nelson/dp/B0GVKGC6Q3/ref=tmm_hrd_swatch_0?_encoding=UTF8&dib_tag=se&dib=eyJ2IjoiMSJ9.iwKrDAa3UTgocnVBY8RBfpljJH6RhAyKewD3JjDRc2vLOEdmpMtaZddqlarhoKO6hoZbg33PkQ7_T4wnPI7mwuuRVo_arCht5_ivDxss_TE.EPI6xmxlMlwoIuYLNhShJKEH40L5p7_l_2vNZ1lGd3k&qid=1777919088&sr=8-1" target="_blank">Buy Now</a>
+    </div>
+  </div>
+</section>
+
+<section id="youtube">
+  <h2>YouTube</h2>
+
+  <div class="glass">
+
+    <p class="notice">
+      Watch my latest uploads and live streams. This updates automatically.
+    </p>
+
+    <h3 style="color:#ff9900;">🎥 Latest Video</h3>
+
+    <iframe
+      id="latestVideo"
+      class="video-frame"
+      src=""
+      allowfullscreen>
+    </iframe>
+
+    <br><br>
+
+    <a class="btn btn-dark" href="https://www.youtube.com/@TMVChaserChris" target="_blank">
+      Visit My Channel
+    </a>
+
+  </div>
+</section>
+
+<section id="contact">
+  <div class="glass">
+    <h2>Contact</h2>
+    <p class="notice">
+      For questions, business, books, content, or storm chasing updates, contact me here:
+    </p>
+    <p class="notice">
+      Email: <strong>your-email@example.com</strong>
+    </p>
+    <a class="btn" href="mailto:your-email@example.com">Email Me</a>
+  </div>
+</section>
+
+<footer>
+  © 2026 TMV Chaser Chris. All Rights Reserved.
+</footer>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+let soundEnabled = false;
+let alertedIds = new Set();
+let alertLayer;
+
+let radarFrames = [];
+let radarIndex = 0;
+let radarLayer = null;
+let radarTimer = null;
+let radarHost = "";
+
+let outlookLayer = null;
+let outlookVisible = false;
+
+function enableAlerts() {
+  soundEnabled = true;
+  playAlertSound();
+  alert("Alert sound enabled. Keep this page open for tornado alert sounds.");
+}
+
+function playAlertSound() {
+  if (!soundEnabled) return;
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  for (let i = 0; i < 5; i++) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = "square";
+    osc.frequency.setValueAtTime(760, audioCtx.currentTime + i * 0.32);
+
+    gain.gain.setValueAtTime(0.28, audioCtx.currentTime + i * 0.32);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.32 + 0.24);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start(audioCtx.currentTime + i * 0.32);
+    osc.stop(audioCtx.currentTime + i * 0.32 + 0.24);
+  }
+}
+
+const map = L.map("map").setView([39.8283, -98.5795], 5);
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 18,
+  attribution: "© OpenStreetMap"
+}).addTo(map);
+
+alertLayer = L.geoJSON(null, {
+  style: {
+    color: "red",
+    weight: 4,
+    fillColor: "red",
+    fillOpacity: 0.18
+  },
+  onEachFeature: function(feature, layer) {
+    const p = feature.properties;
+    layer.bindPopup(`
+      <strong>${p.event}</strong><br>
+      ${p.areaDesc}<br>
+      <small>${p.headline || ""}</small>
+    `);
+  }
+}).addTo(map);
+
+function goToNebraska() {
+  map.setView([41.5, -99.7], 6);
+}
+
+function goToUS() {
+  map.setView([39.8283, -98.5795], 5);
+}
+
+async function loadRadar() {
+  try {
+    const res = await fetch("https://api.rainviewer.com/public/weather-maps.json");
+    const data = await res.json();
+
+    radarHost = data.host;
+    radarFrames = data.radar.past;
+
+    radarIndex = radarFrames.length - 1;
+    showRadarFrame(radarIndex);
+  } catch (err) {
+    console.log("Radar failed to load:", err);
+  }
+}
+
+function showRadarFrame(index) {
+  if (!radarFrames.length) return;
+
+  if (radarLayer) {
+    map.removeLayer(radarLayer);
+  }
+
+  const frame = radarFrames[index];
+
+  radarLayer = L.tileLayer(`${radarHost}${frame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
+    opacity: 0.72,
+    attribution: "Radar © RainViewer"
+  });
+
+  radarLayer.addTo(map);
+}
+
+function playRadar() {
+  if (radarTimer) return;
+
+  radarTimer = setInterval(() => {
+    radarIndex++;
+
+    if (radarIndex >= radarFrames.length) {
+      radarIndex = 0;
+    }
+
+    showRadarFrame(radarIndex);
+  }, 700);
+}
+
+function pauseRadar() {
+  clearInterval(radarTimer);
+  radarTimer = null;
+}
+
+function getOutlookStyle(feature) {
+  const props = feature.properties || {};
+  const rawLabel = String(props.LABEL || props.label || props.CAT || props.category || props.DN || "").toUpperCase();
+
+  let color = "#7CFC00";
+  let fillOpacity = 0.12;
+
+  if (rawLabel.includes("TSTM")) {
+    color = "#9acd32";
+    fillOpacity = 0.08;
+  } else if (rawLabel.includes("MRGL")) {
+    color = "#00b050";
+    fillOpacity = 0.14;
+  } else if (rawLabel.includes("SLGT")) {
+    color = "#ffd700";
+    fillOpacity = 0.16;
+  } else if (rawLabel.includes("ENH")) {
+    color = "#ff8c00";
+    fillOpacity = 0.18;
+  } else if (rawLabel.includes("MDT")) {
+    color = "#ff0000";
+    fillOpacity = 0.2;
+  } else if (rawLabel.includes("HIGH")) {
+    color = "#ff00ff";
+    fillOpacity = 0.22;
+  }
+
+  return {
+    color: color,
+    weight: 3,
+    fillColor: color,
+    fillOpacity: fillOpacity
+  };
+}
+
+async function toggleOutlook() {
+  const status = document.getElementById("outlookStatus");
+
+  if (outlookVisible && outlookLayer) {
+    map.removeLayer(outlookLayer);
+    outlookLayer = null;
+    outlookVisible = false;
+    status.innerText = "SPC Outlook: Off";
+    return;
+  }
+
+  try {
+    status.innerText = "SPC Outlook: Loading...";
+
+    const res = await fetch("https://www.spc.noaa.gov/products/outlook/day1otlk_cat.nolyr.geojson");
+    const data = await res.json();
+
+    outlookLayer = L.geoJSON(data, {
+      style: getOutlookStyle,
+      onEachFeature: function(feature, layer) {
+        const p = feature.properties || {};
+        const label = p.LABEL || p.label || p.CAT || "SPC Outlook";
+        layer.bindPopup(`
+          <strong>SPC Day 1 Outlook</strong><br>
+          Risk: ${label}
+        `);
+      }
+    }).addTo(map);
+
+    outlookVisible = true;
+    status.innerText = "SPC Outlook: On";
+
+  } catch (err) {
+    console.log("SPC outlook failed to load:", err);
+    status.innerText = "SPC Outlook: Could not load right now";
+  }
+}
+
+async function checkTornadoAlerts() {
+  try {
+    const res = await fetch("https://api.weather.gov/alerts/active");
+    const data = await res.json();
+
+    const tornadoAlerts = data.features.filter(alert => {
+      const event = alert.properties.event.toLowerCase();
+      return event.includes("tornado warning") || event.includes("tornado watch");
+    });
+
+    const banner = document.getElementById("alertBanner");
+    const list = document.getElementById("alertsList");
+
+    alertLayer.clearLayers();
+    list.innerHTML = "";
+
+    if (tornadoAlerts.length > 0) {
+      banner.style.display = "block";
+
+      tornadoAlerts.forEach(alert => {
+        const p = alert.properties;
+
+        list.innerHTML += `
+          <div class="alert-item">
+            <strong>${p.event}</strong><br>
+            <strong>Area:</strong> ${p.areaDesc}<br>
+            <small>${p.headline || "Tornado alert active."}</small>
+          </div>
+        `;
+
+        if (alert.geometry) {
+          alertLayer.addData(alert);
+        }
+
+        if (!alertedIds.has(alert.id)) {
+          alertedIds.add(alert.id);
+          playAlertSound();
+        }
+      });
+    } else {
+      banner.style.display = "none";
+      list.innerHTML = `<p class="notice">No tornado warnings or watches currently detected in the United States.</p>`;
+    }
+  } catch (err) {
+    console.log("Alert check failed:", err);
+    document.getElementById("alertsList").innerHTML =
+      `<p class="notice">Could not load alerts right now.</p>`;
+  }
+}
+
+loadRadar();
+checkTornadoAlerts();
+setInterval(checkTornadoAlerts, 60000);
+</script>
+
+<script>
+async function loadLatestVideo() {
+  try {
+    const res = await fetch(
+      "https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=UCnbw0IK2DsgGKcduS0LVWhA"
+    );
+
+    const data = await res.json();
+
+    if (!data.items || !data.items.length) {
+      throw new Error("No videos found");
+    }
+
+    const videoId = data.items[0].link.split("v=")[1];
+
+   document.getElementById("latestVideo").src =
+  "https://www.youtube-nocookie.com/embed/" + videoId + "?rel=0&modestbranding=1";
+
+  } catch (err) {
+    console.log("Failed to load latest video");
+
+    document.getElementById("latestVideo").src =
+      "https://www.youtube.com/embed?listType=user_uploads&list=TMVChaserChris";
+  }
+}
+
+loadLatestVideo();
+</script>
+
+</body>
+</html>
